@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt # Библиотека для построения графиков
 import random # Библиотека для сравнения с готовым генератором
-from scipy.stats import kstest
+from scipy.stats import kstest # Импорт функции для теста Колмогорова-Смирнова
+import numpy as np  # Библиотека для работы с массивами
 
 """
 matplotlib.pyplot позволяет строить графики и диаграммы. Мы будем использовать его, чтобы построить гистограмму и увидеть, как распределяются сгенерированные числа.
@@ -94,3 +95,45 @@ plt.show()
 
 statistic, p_value = kstest(random_values, 'uniform')
 print(f"KS-statistic (random): {statistic}, p-value: {p_value}")
+
+# 3.1 Тестирование на независимость (Автокорреляционный тест)
+"""
+Проверка независимости последовательных чисел с использованием автокорреляционного теста.
+Автокорреляционный тест проверяет, есть ли корреляция между последовательными числами.
+"""
+
+def autocorrelation_test(values, lag=1): # функция,что рассчитывает автокорреляцию для последовательности чисел
+    n = len(values)
+    mean = np.mean(values)
+    autocov = np.sum((values[:n - lag] - mean) * (values[lag:] - mean))
+    return autocov / np.var(values)
+
+# Автокорреляция для ЛКГ
+autocorr_lcg = autocorrelation_test(lcg_values)
+print(f"Autocorrelation (LCG): {autocorr_lcg}")
+
+# Автокорреляция для встроенного генератора
+autocorr_random = autocorrelation_test(random_values)
+print(f"Autocorrelation (random): {autocorr_random}")
+
+# 3.2 Период ГПСЧ
+"""
+Определение периода генератора псевдослучайных чисел.
+Период — это длина последовательности чисел, после которой генератор начинает повторять значения.
+"""
+
+def find_period(values):
+    seen = {}
+    for i, v in enumerate(values):
+        if v in seen:
+            return i - seen[v]
+        seen[v] = i
+    return None
+
+# Поиск периода для ЛКГ
+period_lcg = find_period(lcg_values)
+print(f"Period (LCG): {period_lcg}")
+
+# Поиск периода для встроенного генератора
+period_random = find_period(random_values)
+print(f"Period (random): {period_random}")
